@@ -11,23 +11,21 @@ if (loginForm) {
         errorMessage.classList.add('hidden');
 
         try {
-            // Substitua pela URL real da API do auth-service em ambiente de deploy
-            const response = await fetch('https://api-gateway-ou-auth-service.url/api/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
 
-            if (!response.ok) throw new Error('E-mail ou senha inválidos.');
-
             const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'E-mail ou senha inválidos.');
             
             // Armazenando os tokens de acesso e sessão
             localStorage.setItem('questify_access_token', data.accessToken);
             localStorage.setItem('questify_refresh_token', data.refreshToken);
 
             // Redireciona para a página principal
-            window.location.href = '/dashboard.html';
+            window.location.href = 'dashboard.html';
 
         } catch (error) {
             errorMessage.textContent = error.message || 'Erro ao conectar com o servidor.';
@@ -95,9 +93,6 @@ if (registerForm) {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // Captura a resposta do reCAPTCHA do Google
-        const recaptchaResponse = grecaptcha.getResponse();
-
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
 
@@ -112,21 +107,14 @@ if (registerForm) {
             return;
         }
 
-        // Validação do reCAPTCHA
-        if (!recaptchaResponse) {
-            errorMessage.textContent = 'Por favor, confirme que você não é um robô (reCAPTCHA).';
-            errorMessage.classList.remove('hidden');
-            return;
-        }
-
         try {
-            const response = await fetch('https://api-gateway-ou-auth-service.url/api/auth/register', {
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, recaptchaToken: recaptchaResponse })
+                body: JSON.stringify({ name, email, password })
             });
-
-            if (!response.ok) throw new Error('Erro ao criar conta. O e-mail pode já estar em uso.');
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Erro ao criar conta.');
 
             successMessage.textContent = 'Conta criada com sucesso! Redirecionando...';
             successMessage.classList.remove('hidden');
@@ -138,8 +126,6 @@ if (registerForm) {
         } catch (error) {
             errorMessage.textContent = error.message || 'Erro ao conectar com o servidor.';
             errorMessage.classList.remove('hidden');
-            // Reseta o reCAPTCHA em caso de falha
-            grecaptcha.reset();
         }
     });
 }

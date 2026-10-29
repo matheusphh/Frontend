@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Questify - Cadastro</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Script oficial do Google reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="auth-container">
@@ -36,11 +34,6 @@
                         <li id="number" style="color: #ef4444;">❌ Pelo menos um número</li>
                         <li id="symbol" style="color: #ef4444;">❌ Pelo menos um símbolo (!@#$...)</li>
                     </ul>
-                </div>
-
-                <!-- Campo do reCAPTCHA (Proteção Antifraude / Task S1 | 4) -->
-                <div class="input-group-captcha" style="margin-bottom: 1.25rem; display: flex; justify-content: center;">
-                    <div class="g-recaptcha" data-sitekey="SUA_SITE_KEY_DO_RECAPTCHA_AQUI"></div>
                 </div>
 
                 <div id="errorMessage" class="error-message hidden"></div>
