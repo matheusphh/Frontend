@@ -4,8 +4,9 @@ const { extname, resolve, sep } = require('node:path');
 const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
-const root = __dirname;
-const dbPath = process.env.QUESTIFY_DB || resolve(root, 'questify.sqlite3');
+const backendRoot = __dirname;
+const frontendRoot = resolve(backendRoot, '..', 'frontend');
+const dbPath = process.env.QUESTIFY_DB || resolve(backendRoot, 'data', 'questify.sqlite3');
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 8000);
 const iterations = 310_000;
@@ -154,8 +155,8 @@ const server = createServer(async (req, res) => {
     return res.end();
   }
   const relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
-  const filePath = resolve(root, relativePath);
-  if (filePath !== root && !filePath.startsWith(root + sep)) {
+  const filePath = resolve(frontendRoot, relativePath);
+  if (filePath !== frontendRoot && !filePath.startsWith(frontendRoot + sep)) {
     res.writeHead(403);
     return res.end();
   }
