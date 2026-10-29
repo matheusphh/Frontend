@@ -11,6 +11,6 @@
     "vercel-build": "node --check api/auth/[action].js"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.10.0"
+    "postgres": "^3.4.7"
   }
 }

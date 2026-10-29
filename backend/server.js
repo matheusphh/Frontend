@@ -2,7 +2,7 @@ const { createServer } = require('node:http');
 const { createReadStream, existsSync } = require('node:fs');
 const { extname, resolve, sep } = require('node:path');
 const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:crypto');
-const { sql } = require('@vercel/postgres');
+const getDatabase = require('../lib/db');
 
 const backendRoot = __dirname;
 const frontendRoot = resolve(backendRoot, '..', 'frontend');
@@ -11,22 +11,25 @@ const port = Number(process.env.PORT || 8000);
 const iterations = 310_000;
 
 let schemaReady;
-function ensureSchema() {
+function ensureSchema(sql) {
   if (!schemaReady) {
-    schemaReady = Promise.all([
-      sql`CREATE TABLE IF NOT EXISTS users (
+    schemaReady = (async () => {
+      await sql`CREATE TABLE IF NOT EXISTS users (
         id BIGSERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )`,
-      sql`CREATE TABLE IF NOT EXISTS sessions (
+      )`;
+      await sql`CREATE TABLE IF NOT EXISTS sessions (
         token_hash TEXT PRIMARY KEY,
         user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at BIGINT NOT NULL
-      )`,
-    ]).catch((error) => {
+      )`;
+      await sql`ALTER TABLE users ENABLE ROW LEVEL SECURITY`;
+      await sql`ALTER TABLE sessions ENABLE ROW LEVEL SECURITY`;
+      await sql`REVOKE ALL ON TABLE users, sessions FROM anon, authenticated`;
+    })().catch((error) => {
       schemaReady = undefined;
       throw error;
     });
@@ -84,7 +87,8 @@ async function handleAuth(req, res, pathname) {
   }
   if (!payload) return sendJson(res, 400, { message: 'Requisição JSON inválida.' });
 
-  await ensureSchema();
+  const sql = getDatabase();
+  await ensureSchema(sql);
 
   if (pathname === '/api/auth/register') {
     const name = typeof payload.name === 'string' ? payload.name.trim() : '';

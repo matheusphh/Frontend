@@ -1,5 +1,5 @@
-const { sql } = require('@vercel/postgres');
 const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:crypto');
+const getDatabase = require('../../lib/db');
 
 const iterations = 310_000;
 
@@ -25,7 +25,7 @@ function json(response, status, payload) {
   return response.status(status).json(payload);
 }
 
-async function ensureSchema() {
+async function ensureSchema(sql) {
   await sql`CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -38,6 +38,9 @@ async function ensureSchema() {
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires_at BIGINT NOT NULL
   )`;
+  await sql`ALTER TABLE users ENABLE ROW LEVEL SECURITY`;
+  await sql`ALTER TABLE sessions ENABLE ROW LEVEL SECURITY`;
+  await sql`REVOKE ALL ON TABLE users, sessions FROM anon, authenticated`;
 }
 
 module.exports = async function handler(request, response) {
@@ -63,7 +66,8 @@ module.exports = async function handler(request, response) {
   }
 
   try {
-    await ensureSchema();
+    const sql = getDatabase();
+    await ensureSchema(sql);
 
     if (action === 'register') {
       const name = typeof payload.name === 'string' ? payload.name.trim() : '';
