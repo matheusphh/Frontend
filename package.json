@@ -4,9 +4,13 @@
   "private": true,
   "description": "Frontend e API REST de autenticação do Questify",
   "engines": {
-    "node": ">=22.13.0"
+    "node": "22.x"
   },
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "vercel-build": "node --check api/auth/[action].js"
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.10.0"
   }
 }

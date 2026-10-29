@@ -1,33 +1,38 @@
 const { createServer } = require('node:http');
-const { createReadStream, existsSync, mkdirSync } = require('node:fs');
+const { createReadStream, existsSync } = require('node:fs');
 const { extname, resolve, sep } = require('node:path');
 const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:crypto');
-const { DatabaseSync } = require('node:sqlite');
+const { sql } = require('@vercel/postgres');
 
 const backendRoot = __dirname;
 const frontendRoot = resolve(backendRoot, '..', 'frontend');
-const dbPath = process.env.QUESTIFY_DB || resolve(backendRoot, 'data', 'questify.sqlite3');
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 8000);
 const iterations = 310_000;
 
-mkdirSync(require('node:path').dirname(dbPath), { recursive: true });
-const db = new DatabaseSync(dbPath);
-db.exec(`
-  PRAGMA foreign_keys = ON;
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    password_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE TABLE IF NOT EXISTS sessions (
-    token_hash TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires_at INTEGER NOT NULL
-  );
-`);
+let schemaReady;
+function ensureSchema() {
+  if (!schemaReady) {
+    schemaReady = Promise.all([
+      sql`CREATE TABLE IF NOT EXISTS users (
+        id BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`,
+      sql`CREATE TABLE IF NOT EXISTS sessions (
+        token_hash TEXT PRIMARY KEY,
+        user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at BIGINT NOT NULL
+      )`,
+    ]).catch((error) => {
+      schemaReady = undefined;
+      throw error;
+    });
+  }
+  return schemaReady;
+}
 
 function passwordHash(password, salt = randomBytes(16)) {
   const digest = pbkdf2Sync(password, salt, iterations, 32, 'sha256');
@@ -79,6 +84,8 @@ async function handleAuth(req, res, pathname) {
   }
   if (!payload) return sendJson(res, 400, { message: 'Requisição JSON inválida.' });
 
+  await ensureSchema();
+
   if (pathname === '/api/auth/register') {
     const name = typeof payload.name === 'string' ? payload.name.trim() : '';
     const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
@@ -90,11 +97,14 @@ async function handleAuth(req, res, pathname) {
       return sendJson(res, 400, { message: 'A senha deve ter entre 8 e 256 caracteres.' });
     }
     try {
-      const result = db.prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')
-        .run(name, email, passwordHash(password));
-      return sendJson(res, 201, { id: Number(result.lastInsertRowid), name, email });
+      const result = await sql`
+        INSERT INTO users (name, email, password_hash)
+        VALUES (${name}, ${email}, ${passwordHash(password)})
+        RETURNING id, name, email
+      `;
+      return sendJson(res, 201, { ...result.rows[0], id: Number(result.rows[0].id) });
     } catch (error) {
-      if (error.code === 'ERR_SQLITE_ERROR' && /UNIQUE constraint failed/i.test(error.message)) {
+      if (error.code === '23505') {
         return sendJson(res, 409, { message: 'Este e-mail já está cadastrado.' });
       }
       throw error;
@@ -104,15 +114,15 @@ async function handleAuth(req, res, pathname) {
   if (pathname === '/api/auth/login') {
     const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
     const password = payload.password;
-    const user = db.prepare('SELECT id, name, email, password_hash FROM users WHERE email = ?').get(email);
+    const result = await sql`SELECT id, name, email, password_hash FROM users WHERE email = ${email} LIMIT 1`;
+    const user = result.rows[0];
     if (!user || typeof password !== 'string' || !verifyPassword(password, user.password_hash)) {
       return sendJson(res, 401, { message: 'E-mail ou senha inválidos.' });
     }
     const token = randomBytes(32).toString('base64url');
     const tokenHash = createHash('sha256').update(token).digest('hex');
     const expiresAt = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
-    db.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
-      .run(tokenHash, user.id, expiresAt);
+    await sql`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (${tokenHash}, ${user.id}, ${expiresAt})`;
     return sendJson(res, 200, {
       accessToken: token,
       refreshToken: token,
@@ -172,8 +182,5 @@ const server = createServer(async (req, res) => {
 server.listen(port, host, () => console.log(`Questify em http://${host}:${port}`));
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.on(signal, () => server.close(() => {
-    db.close();
-    process.exit(0);
-  }));
+  process.on(signal, () => server.close(() => process.exit(0)));
 }
