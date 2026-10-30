@@ -41,4 +41,4 @@ O login cria tokens e registra sua sessão, mas o frontend atual não envia esse
 
 As respostas de erro usam status HTTP apropriados, como `401` para credenciais inválidas e `409` para e-mail já cadastrado. As rotas serverless da Vercel são `api/auth/login.js` e `api/auth/register.js`.
 
-Após o deploy, `https://SEU-DOMINIO/api/health` deve responder `{"status":"ok","service":"questify-api"}`. Se esse endereço também retornar 404, a implantação não está publicando a pasta `api/`.
+Após o deploy, `https://SEU-DOMINIO/api/health` verifica também a conexão com o Supabase. A resposta esperada é `{"status":"ok","service":"questify-api","database":"connected"}`. Se retornar `MISSING_SUPABASE_DB_URL`, configure essa variável na Vercel; outros códigos indicam falha de conexão ou configuração do banco.

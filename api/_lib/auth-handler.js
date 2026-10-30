@@ -105,8 +105,15 @@ module.exports = function createAuthHandler(action) {
       user: { id: Number(user.id), name: user.name, email: user.email },
     });
     } catch (error) {
-      console.error(error);
-      return json(response, 500, { message: 'Erro interno do servidor.' });
+      const code = error.message?.startsWith('Defina SUPABASE_DB_URL')
+        ? 'MISSING_SUPABASE_DB_URL'
+        : error.code || 'INTERNAL_ERROR';
+      console.error('Questify auth request failed:', { code, error });
+      const status = code === 'MISSING_SUPABASE_DB_URL' ? 503 : 500;
+      const message = status === 503
+        ? 'Configure SUPABASE_DB_URL no ambiente da Vercel.'
+        : `Erro interno do servidor (código ${code}).`;
+      return json(response, status, { message });
     }
   };
 };
