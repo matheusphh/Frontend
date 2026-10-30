@@ -1,3 +1,14 @@
+async function readApiResponse(response) {
+    let data;
+    try {
+        data = await response.json();
+    } catch {
+        throw new Error(`A API retornou uma resposta inválida (HTTP ${response.status}). Confira os logs da função na Vercel.`);
+    }
+    if (!response.ok) throw new Error(data.message || `Erro da API (HTTP ${response.status}).`);
+    return data;
+}
+
 // 1. LÓGICA DE LOGIN (index.html)
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -17,8 +28,7 @@ if (loginForm) {
                 body: JSON.stringify({ email, password })
             });
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'E-mail ou senha inválidos.');
+            const data = await readApiResponse(response);
             
             // Armazenando os tokens de acesso e sessão
             localStorage.setItem('questify_access_token', data.accessToken);
@@ -113,8 +123,7 @@ if (registerForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Erro ao criar conta.');
+            const data = await readApiResponse(response);
 
             successMessage.textContent = 'Conta criada com sucesso! Redirecionando...';
             successMessage.classList.remove('hidden');
