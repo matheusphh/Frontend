@@ -7,32 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>Questify</h2>
-            <p class="subtitle">Faça login para continuar sua jornada</p>
-            
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" required placeholder="seu.email@exemplo.com">
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" required placeholder="********">
-                </div>
-
-                <div id="errorMessage" class="error-message hidden"></div>
-                
-                <button type="submit" class="btn-primary">Entrar</button>
-            </form>
-
-            <p class="footer-link">
-                Ainda não tem uma conta? <a href="register.html">Cadastre-se</a>
-            </p>
-        </div>
-    </div>
-    <script src="app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

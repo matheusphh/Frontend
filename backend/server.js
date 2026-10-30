@@ -5,7 +5,7 @@ const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:c
 const getDatabase = require('../api/_lib/db');
 
 const backendRoot = __dirname;
-const frontendRoot = resolve(backendRoot, '..', 'frontend');
+const frontendRoot = resolve(backendRoot, '..', 'frontend', 'dist');
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 8000);
 const iterations = 310_000;

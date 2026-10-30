@@ -8,9 +8,16 @@
   },
   "scripts": {
     "start": "node backend/server.js",
-    "vercel-build": "node --check api/health.js && node --check api/auth/login.js && node --check api/auth/register.js && node --check api/_lib/auth-handler.js"
+    "dev": "vite frontend",
+    "build": "vite build frontend",
+    "vercel-build": "npm run build && node --check api/health.js && node --check api/auth/login.js && node --check api/auth/register.js && node --check api/_lib/auth-handler.js"
   },
   "dependencies": {
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
   }
 }

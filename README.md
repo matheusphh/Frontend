@@ -1,10 +1,10 @@
 # Questify
 
-Aplicação de login e cadastro com frontend estático, API REST em Node.js e banco PostgreSQL do Supabase, tanto localmente quanto na Vercel.
+Aplicação de login e cadastro com frontend React (Vite), API REST em Node.js e banco PostgreSQL do Supabase, tanto localmente quanto na Vercel.
 
 ## Estrutura
 
-- `frontend/`: páginas, estilos e JavaScript do navegador.
+- `frontend/`: aplicação React, estilos e configuração do build Vite.
 - `backend/server.js`: API de autenticação e servidor dos arquivos do frontend.
 - `api/auth/login.js` e `api/auth/register.js`: funções serverless da Vercel.
 - `api/health.js`: endpoint simples para confirmar que funções foram publicadas.
@@ -13,18 +13,21 @@ Aplicação de login e cadastro com frontend estático, API REST em Node.js e ba
 
 ## Executar
 
-Requer Node.js 22.13 ou superior e a connection string do pooler de transações do Supabase em `SUPABASE_DB_URL`. Instale as dependências com `npm install` e inicie o servidor:
+Requer Node.js 22.13 ou superior e a connection string do pooler de transações do Supabase em `SUPABASE_DB_URL`. Instale as dependências com `npm install` e gere o frontend React:
 
 ```bash
 export SUPABASE_DB_URL='postgres://postgres.PROJECT_REF:SENHA@aws-0-REGIAO.pooler.supabase.com:6543/postgres'
+npm run build
 npm start
 ```
+
+Para desenvolvimento do frontend com recarregamento automático, execute `npm start` e `npm run dev` em terminais separados. O Vite encaminha as chamadas `/api` para o servidor local. Para servir a aplicação compilada, execute `npm run build` antes de `npm start`.
 
 Obtenha a URL no painel Supabase em **Connect → Transaction pooler**. Abra `http://127.0.0.1:8000`. O servidor cria as tabelas `users` e `sessions` automaticamente se ainda não existirem. A tabela `users` armazena o hash PBKDF2-SHA256 da senha, nunca a senha original.
 
 ## Publicar na Vercel
 
-1. Importe este repositório como um projeto na Vercel. A configuração em `vercel.json` publica `frontend/` como site estático e mantém `api/` como funções Node.js.
+1. Importe este repositório como um projeto na Vercel. O build Vite publica `frontend/dist` como site e mantém `api/` como funções Node.js.
 2. No projeto Supabase, obtenha a connection string em **Connect → Transaction pooler**. Configure-a como `SUPABASE_DB_URL` nas variáveis do projeto Vercel, para Preview, Production e Development conforme necessário. Mantenha a variável privada e não use prefixo `NEXT_PUBLIC_`.
 3. Faça o deploy. As tabelas `users` e `sessions` são criadas automaticamente na primeira chamada da API. O schema também está versionado em `supabase/migrations/20261029000000_create_auth_tables.sql` para aplicação pelo Supabase CLI ou SQL Editor.
 

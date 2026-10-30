@@ -7,46 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>Criar Conta</h2>
-            <p class="subtitle">Junte-se ao Questify e comece sua jornada</p>
-            
-            <form id="registerForm">
-                <div class="input-group">
-                    <label for="name">Nome completo</label>
-                    <input type="text" id="name" required placeholder="Seu nome">
-                </div>
-
-                <div class="input-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" required placeholder="seu.email@exemplo.com">
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Senha forte</label>
-                    <input type="password" id="password" required placeholder="Digite sua senha">
-                    
-                    <!-- Lista de requisitos visuais em tempo real -->
-                    <ul id="password-requirements" style="list-style: none; padding: 0; margin-top: 0.5rem; font-size: 0.8rem;">
-                        <li id="length" style="color: #ef4444;">❌ Pelo menos 8 caracteres</li>
-                        <li id="uppercase" style="color: #ef4444;">❌ Letra maiúscula e minúscula</li>
-                        <li id="number" style="color: #ef4444;">❌ Pelo menos um número</li>
-                        <li id="symbol" style="color: #ef4444;">❌ Pelo menos um símbolo (!@#$...)</li>
-                    </ul>
-                </div>
-
-                <div id="errorMessage" class="error-message hidden"></div>
-                <div id="successMessage" class="success-message hidden" style="background: #065f46; color: #6ee7b7; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem; text-align: center;"></div>
-                
-                <button type="submit" class="btn-primary">Cadastrar</button>
-            </form>
-
-            <p class="footer-link">
-                Já tem uma conta? <a href="index.html">Faça login</a>
-            </p>
-        </div>
-    </div>
-    <script src="app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
