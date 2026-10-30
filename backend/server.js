@@ -2,7 +2,7 @@ const { createServer } = require('node:http');
 const { createReadStream, existsSync } = require('node:fs');
 const { extname, resolve, sep } = require('node:path');
 const { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } = require('node:crypto');
-const getDatabase = require('../lib/db');
+const getDatabase = require('../api/_lib/db');
 
 const backendRoot = __dirname;
 const frontendRoot = resolve(backendRoot, '..', 'frontend');

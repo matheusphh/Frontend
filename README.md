@@ -6,7 +6,8 @@ Aplicação de login e cadastro com frontend estático, API REST em Node.js e ba
 
 - `frontend/`: páginas, estilos e JavaScript do navegador.
 - `backend/server.js`: API de autenticação e servidor dos arquivos do frontend.
-- `api/auth/[action].js`: função serverless de autenticação para a Vercel.
+- `api/auth/login.js` e `api/auth/register.js`: funções serverless da Vercel.
+- `api/_lib/`: código compartilhado pelas funções e pelo servidor local.
 - `supabase/migrations/`: schema versionado das tabelas da aplicação.
 
 ## Executar

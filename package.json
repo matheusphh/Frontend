@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node backend/server.js",
-    "vercel-build": "node --check api/auth/login.js && node --check api/auth/register.js && node --check lib/auth-handler.js"
+    "vercel-build": "node --check api/auth/login.js && node --check api/auth/register.js && node --check api/_lib/auth-handler.js"
   },
   "dependencies": {
     "postgres": "^3.4.7"
