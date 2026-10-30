@@ -21,8 +21,12 @@ function verifyPassword(password, stored) {
 }
 
 function json(response, status, payload) {
+  const body = JSON.stringify(payload);
+  response.statusCode = status;
+  response.setHeader('Content-Type', 'application/json; charset=utf-8');
   response.setHeader('Cache-Control', 'no-store');
-  return response.status(status).json(payload);
+  response.setHeader('Content-Length', Buffer.byteLength(body));
+  return response.end(body);
 }
 
 async function ensureSchema(sql) {
@@ -80,7 +84,8 @@ module.exports = function createAuthHandler(action) {
           VALUES (${name}, ${email}, ${passwordHash(password)})
           RETURNING id, name, email
         `;
-        return json(response, 201, result.rows[0]);
+        const user = result.rows[0];
+        return json(response, 201, { id: Number(user.id), name: user.name, email: user.email });
       } catch (error) {
         if (error.code === '23505') return json(response, 409, { message: 'Este e-mail já está cadastrado.' });
         throw error;
