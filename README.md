@@ -27,6 +27,8 @@ Obtenha a URL no painel Supabase em **Connect → Transaction pooler**. Abra `ht
 2. No projeto Supabase, obtenha a connection string em **Connect → Transaction pooler**. Configure-a como `SUPABASE_DB_URL` nas variáveis do projeto Vercel, para Preview, Production e Development conforme necessário. Mantenha a variável privada e não use prefixo `NEXT_PUBLIC_`.
 3. Faça o deploy. As tabelas `users` e `sessions` são criadas automaticamente na primeira chamada da API. O schema também está versionado em `supabase/migrations/20261029000000_create_auth_tables.sql` para aplicação pelo Supabase CLI ou SQL Editor.
 
+Em **Settings → Build and Deployment**, deixe **Root Directory** apontando para a raiz deste repositório (não `frontend/`). A Vercel precisa encontrar `api/` na raiz para publicar as funções. O preset `Other` está definido em `vercel.json`.
+
 O arquivo SQLite antigo foi removido do repositório e suas contas não foram migradas. O login do Questify usa tabelas próprias no PostgreSQL do Supabase e não depende do Supabase Auth.
 
 O login cria tokens e registra sua sessão, mas o frontend atual não envia esses tokens em chamadas autenticadas nem há uma rota de logout.
