@@ -7,6 +7,7 @@ Aplicação de login e cadastro com frontend estático, API REST em Node.js e ba
 - `frontend/`: páginas, estilos e JavaScript do navegador.
 - `backend/server.js`: API de autenticação e servidor dos arquivos do frontend.
 - `api/auth/login.js` e `api/auth/register.js`: funções serverless da Vercel.
+- `api/health.js`: endpoint simples para confirmar que funções foram publicadas.
 - `api/_lib/`: código compartilhado pelas funções e pelo servidor local.
 - `supabase/migrations/`: schema versionado das tabelas da aplicação.
 
@@ -39,3 +40,5 @@ O login cria tokens e registra sua sessão, mas o frontend atual não envia esse
 - `POST /api/auth/login` com `{ "email", "password" }`
 
 As respostas de erro usam status HTTP apropriados, como `401` para credenciais inválidas e `409` para e-mail já cadastrado. As rotas serverless da Vercel são `api/auth/login.js` e `api/auth/register.js`.
+
+Após o deploy, `https://SEU-DOMINIO/api/health` deve responder `{"status":"ok","service":"questify-api"}`. Se esse endereço também retornar 404, a implantação não está publicando a pasta `api/`.
